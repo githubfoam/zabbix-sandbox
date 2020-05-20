@@ -17,6 +17,7 @@ chmod 644 /etc/zabbix/zabbix.conf.php
 systemctl reload apache2
 systemctl start zabbix-server
 systemctl enable zabbix-server
+systemctl status zabbix-server
 
 # this ^^ could be included in ansible too
 #ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i /vagrant/ansible_hosts /vagrant/ansible_playbook
