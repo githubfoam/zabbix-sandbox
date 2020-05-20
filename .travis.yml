@@ -80,9 +80,9 @@ fleet_script_vagrant_tasks : &fleet_script_vagrant_tasks
           - sudo vagrant status
           - sudo vagrant global-status
           - sudo vagrant ssh zabbix01 -c "hostnamectl"
-          - sudo vagrant ssh zabbix01 -c "sudo service zabbix-server status"
-          - sudo vagrant ssh zabbix01 -c "sudo service zabbix-agent status"
-          - sudo vagrant ssh zabbix01 -c "sudo service apache2 status"                   
+          - travis_wait 15 sudo vagrant ssh zabbix01 -c "sudo service zabbix-server status"
+          # - sudo vagrant ssh zabbix01 -c "sudo service zabbix-agent status"
+          # - sudo vagrant ssh zabbix01 -c "sudo service apache2 status"
           # - sudo vagrant ssh zabbix01 -c "curl http://localhost:8080/"
           - sudo virsh list --all #show all running KVM/libvirt VMs
 fleet_script_tasks : &fleet_script_tasks
