@@ -1,48 +1,49 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
-Vagrant.configure(2) do |config|
-	# config.vm.box = "ubuntu/bionic64"
-	config.vm.box = "bento/ubuntu-19.10"
-	config.vm.provider "virtualbox" do |vb|
-		# vb.check_guest_additions=false
-	end
+# All Vagrant configuration is done below. The "2" in Vagrant.configure
+# configures the configuration version (we support older styles for
+# backwards compatibility). Please don't change it unless you know what
+# you're doing.
 
-	# PTP Master
-	config.vm.define "vm1" do |vm1|
-		vm1.vm.network "public_network", ip: "192.168.55.1"
-		vm1.vm.hostname = "vm1"
-		vm1.vm.provider "virtualbox" do |vb|
-			vb.memory = "1024"
-		end
-	end
+Vagrant.require_version ">= 1.6.0"
+VAGRANTFILE_API_VERSION = "2"
+# YAML module for reading box configurations.
+require 'yaml'
+#  server configs from YAML/YML file
+servers_list = YAML.load_file(File.join(File.dirname(__FILE__), 'provisioning/servers_list.yml'))
 
-	# PTP Slave
-	config.vm.define "vm2" do |vm2|
-		vm2.vm.network "public_network", ip: "192.168.55.2"
-		vm2.vm.hostname = "vm2"
-		vm2.vm.provider "virtualbox" do |vb|
-			vb.memory = "1024"
-		end
-	end
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+ # Disable updates
+ config.vm.box_check_update = false
 
-	# PTP Slave
-	config.vm.define "vm3" do |vm3|
-		vm3.vm.network "public_network", ip: "192.168.55.3"
-		vm3.vm.hostname = "vm3"
-		vm3.vm.provider "virtualbox" do |vb|
-			vb.memory = "1024"
-		end
-	end
+      servers_list.each do |server|
+        config.vm.define server["vagrant_box_host"] do |box|
+          box.vm.box = server["vagrant_box"]
+          box.vm.hostname = server["vagrant_box_host"]
+          box.vm.network server["network_type"], ip: server["vagrant_box_ip"]
+          box.vm.network "forwarded_port", guest: server["guest_port"], host: server["host_port"]
+          box.vm.provider "virtualbox" do |vb|
+              vb.name = server["vbox_name"]
+              vb.memory = server["vbox_ram"]
+              vb.cpus = server["vbox_cpu"]
+              vb.gui = false
+              vb.customize ["modifyvm", :id, "--groups", "/zeek-sandbox"] # create vbox group
+          end # end of box.vm.providers
 
-	# Zabbix monitoring, ansible
-	config.vm.define "mon" do |mon|
-		mon.vm.network "public_network", ip: "192.168.55.4"
-		mon.vm.hostname = "mon"
-		mon.vm.provider "virtualbox" do |vb|
-			vb.memory = "1024"
-		end
-		mon.vm.network "forwarded_port", guest: 80, host: 80
-		mon.vm.provision "shell", path: "provision.sh", keep_color: true
-	end
-end
+          box.vm.provision "ansible_local" do |ansible|
+              # ansible.compatibility_mode = "2.0"
+              ansible.compatibility_mode = server["ansible_compatibility_mode"]
+              ansible.version = server["ansible_version"]
+              ansible.playbook = server["server_bootstrap"]
+              # ansible.inventory_path = 'provisioning/hosts'
+              # ansible.verbose = "vvvv" # debug
+           end # end if box.vm.provision
+           box.vm.provision "shell", path: server["shell_provision"]
+           # box.vm.provision "shell", inline: <<-SHELL
+           #                            hostnamectl status
+           #  SHELL
+
+        end # end of config.vm
+      end  # end of servers_list.each loop
+end # end of Vagrant.configure
