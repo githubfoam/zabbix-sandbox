@@ -1,53 +1,56 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
-Vagrant.configure("2") do |config|
+# All Vagrant configuration is done below. The "2" in Vagrant.configure
+# configures the configuration version (we support older styles for
+# backwards compatibility). Please don't change it unless you know what
+# you're doing.
 
-  config.vm.box = "centos/7"
-  config.vm.provider :libvirt do |vb|
-    vb.memory = 2048
-    vb.cpus = "1"
-  end
+Vagrant.require_version ">= 1.6.0"
+VAGRANTFILE_API_VERSION = "2"
+# YAML module for reading box configurations.
+require 'yaml'
+#  server configs from YAML/YML file
+servers_list = YAML.load_file(File.join(File.dirname(__FILE__), 'provisioning/servers_list.yml'))
 
-	config.vm.define "zabbix" do |node|
-    #docker, virtualbox, smb, nfs, rsync, 9p
-    #The type 'sshfs' is not a valid synced folder type
-		# node.vm.synced_folder ".", "/vagrant", type: "sshfs"
-		node.vm.hostname = "zabbix.local"
-		node.vm.network :private_network, ip: "10.0.15.30"
-		node.vm.provision :hostmanager
-		node.vm.provision :ansible do |ansible|
-			ansible.playbook = "playbook.yml"
-			ansible.compatibility_mode = "2.0"
-			ansible.limit = "all"
-		end
-	end
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+ # Disable updates
+ config.vm.box_check_update = false
 
-	config.vm.define "proxy" do |node|
-		# node.vm.synced_folder ".", "/vagrant", type: "sshfs"
-		node.vm.hostname = "proxy.local"
-		node.vm.network :private_network, ip: "10.0.15.31"
-		node.vm.provision :hostmanager
-	end
+      servers_list.each do |server|
+        config.vm.define server["vagrant_box_host"] do |box|
+          box.vm.box = server["vagrant_box"]
+          box.vm.hostname = server["vagrant_box_host"]
+          box.vm.network server["network_type"], ip: server["vagrant_box_ip"]
+          box.vm.network "forwarded_port", guest: server["guest_port"], host: server["host_port"]
+          box.vm.provider "virtualbox" do |vb|
+              vb.name = server["vbox_name"]
+              vb.memory = server["vbox_ram"]
+              vb.cpus = server["vbox_cpu"]
+              vb.gui = false
+              vb.customize ["modifyvm", :id, "--groups", "/zeek-sandbox"] # create vbox group
+          end # end of box.vm.providers
 
-	config.vm.define "client1" do |node|
-		# node.vm.synced_folder ".", "/vagrant", type: "sshfs"
-		node.vm.hostname = "client1.local"
-		node.vm.network :private_network, ip: "10.0.15.32"
-		node.vm.provision :hostmanager
-	end
+          box.vm.provision "ansible_local" do |ansible|
+              # ansible.compatibility_mode = "2.0"
+              ansible.compatibility_mode = server["ansible_compatibility_mode"]
+              ansible.version = server["ansible_version"]
+              ansible.playbook = server["server_bootstrap"]
+              # ansible.inventory_path = 'provisioning/hosts'
+              # ansible.verbose = "vvvv" # debug
+           end # end if box.vm.provision
+           box.vm.provision "shell", path: server["shell_provision"]
+           # box.vm.provision "shell", inline: <<-SHELL
+           #  echo "===================================================================================="
+           #                            hostnamectl status
+           #  echo "===================================================================================="
+           #  echo "         \   ^__^                                                                  "
+           #  echo "          \  (oo)\_______                                                          "
+           #  echo "             (__)\       )\/\                                                      "
+           #  echo "                 ||----w |                                                         "
+           #  echo "                 ||     ||                                                         "
+           #  SHELL
 
-	config.vm.define "client2" do |node|
-		# node.vm.synced_folder ".", "/vagrant", type: "sshfs"
-		node.vm.hostname = "client2.local"
-		node.vm.network :private_network, ip: "10.0.15.33"
-		node.vm.provision :hostmanager
-	end
-
-	if Vagrant.has_plugin?("vagrant-hostmanager")
-		config.hostmanager.enabled = false
-		config.hostmanager.manage_host = true
-		config.hostmanager.manage_guest = true
-		config.hostmanager.include_offline = true
-	end
-end
+        end # end of config.vm
+      end  # end of servers_list.each loop
+end # end of Vagrant.configure
