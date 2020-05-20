@@ -70,8 +70,8 @@ fleet_script_vagrant_tasks : &fleet_script_vagrant_tasks
           - sudo vagrant plugin install vagrant-mutate #Convert vagrant boxes to work with different providers
           - sudo vagrant status
           - sudo virsh list --all #show all running KVM/libvirt VMs
-          - vagrant box add "ubuntu/bionic64"  --provider=virtualbox
-          - vagrant mutate "ubuntu/bionic64"  libvirt
+          - vagrant box add "bento/ubuntu-19.10"  --provider=virtualbox
+          - vagrant mutate "bento/ubuntu-19.10"  libvirt
           - sudo vagrant up --no-parallel --provider=libvirt
           - sudo vagrant box list #veridy installed boxes
           - sudo vagrant status #Check the status of the VMs to see that none of them have been created yet
@@ -95,7 +95,7 @@ matrix:
   fast_finish: true
   include:
 
-    - name: "Python 3.7 on bionic"
+    - name: "Python 3.7 on bionic amd64"
       dist: bionic
       language: python
       python: 3.7
@@ -173,19 +173,19 @@ matrix:
     #     - deactivate
 
 
-    - name: "Python 2.7 on xenial amd64"
-      dist: xenial
-      language: python
-      python: 2.7
-      before_install:
-        - pip install virtualenv
-        - virtualenv -p $(which python2) ~venvpy2
-        - source ~venvpy2/bin/activate
-      <<: *fleet_install_tasks
-      <<: *fleet_script_tasks
-      # <<: *fleet_script_vagrant_tasks
-      after_success:
-        - deactivate
+    # - name: "Python 2.7 on xenial amd64"
+    #   dist: xenial
+    #   language: python
+    #   python: 2.7
+    #   before_install:
+    #     - pip install virtualenv
+    #     - virtualenv -p $(which python2) ~venvpy2
+    #     - source ~venvpy2/bin/activate
+    #   <<: *fleet_install_tasks
+    #   <<: *fleet_script_tasks
+    #   # <<: *fleet_script_vagrant_tasks
+    #   after_success:
+    #     - deactivate
 
     # - name: "Python 3.7 on xenial arm64"
     #   os: linux
