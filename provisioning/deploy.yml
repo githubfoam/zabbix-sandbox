@@ -6,6 +6,8 @@
   vars:
     add_host_entries: true
     add_resolv_entries: true
+  vars_files:
+    - "vars/{{env}}.yml"
   pre_tasks:
   - name: "Setting hostname"
     shell: "hostnamectl set-hostname {{ inventory_hostname }}"
