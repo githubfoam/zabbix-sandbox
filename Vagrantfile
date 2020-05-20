@@ -1,54 +1,47 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
-# -*- mode: ruby -*-
-# vi: set ft=ruby :
+Vagrant.configure(2) do |config|
+	config.vm.box = "ubuntu/bionic64"
+	config.vm.provider "virtualbox" do |vb|
+		# vb.check_guest_additions=false
+	end
 
-Vagrant.configure("2") do |config|
-
-  config.vm.box = "centos/7"
-  config.vm.provider :libvirt do |vb|
-    vb.memory = 2048
-    vb.cpus = "1"
-  end
-
-	config.vm.define "zabbix" do |node|
-		node.vm.synced_folder ".", "/vagrant", type: "sshfs"
-		node.vm.hostname = "zabbix.local"
-		node.vm.network :private_network, ip: "10.0.15.30"
-		node.vm.provision :hostmanager
-		node.vm.provision :ansible do |ansible|
-			ansible.playbook = "playbook.yml"
-			ansible.compatibility_mode = "2.0"
-			ansible.limit = "all"
+	# PTP Master
+	config.vm.define "vm1" do |vm1|
+		vm1.vm.network "public_network", ip: "192.168.55.1"
+		vm1.vm.hostname = "vm1"
+		vm1.vm.provider "virtualbox" do |vb|
+			vb.memory = "1024"
 		end
 	end
 
-	config.vm.define "proxy" do |node|
-		node.vm.synced_folder ".", "/vagrant", type: "sshfs"
-		node.vm.hostname = "proxy.local"
-		node.vm.network :private_network, ip: "10.0.15.31"
-		node.vm.provision :hostmanager
+	# PTP Slave
+	config.vm.define "vm2" do |vm2|
+		vm2.vm.network "public_network", ip: "192.168.55.2"
+		vm2.vm.hostname = "vm2"
+		vm2.vm.provider "virtualbox" do |vb|
+			vb.memory = "1024"
+		end
 	end
 
-	config.vm.define "client1" do |node|
-		node.vm.synced_folder ".", "/vagrant", type: "sshfs"
-		node.vm.hostname = "client1.local"
-		node.vm.network :private_network, ip: "10.0.15.32"
-		node.vm.provision :hostmanager
+	# PTP Slave
+	config.vm.define "vm3" do |vm3|
+		vm3.vm.network "public_network", ip: "192.168.55.3"
+		vm3.vm.hostname = "vm3"
+		vm3.vm.provider "virtualbox" do |vb|
+			vb.memory = "1024"
+		end
 	end
 
-	config.vm.define "client2" do |node|
-		node.vm.synced_folder ".", "/vagrant", type: "sshfs"
-		node.vm.hostname = "client2.local"
-		node.vm.network :private_network, ip: "10.0.15.33"
-		node.vm.provision :hostmanager
-	end
-
-	if Vagrant.has_plugin?("vagrant-hostmanager")
-		config.hostmanager.enabled = false
-		config.hostmanager.manage_host = true
-		config.hostmanager.manage_guest = true
-		config.hostmanager.include_offline = true
+	# Zabbix monitoring, ansible
+	config.vm.define "mon" do |mon|
+		mon.vm.network "public_network", ip: "192.168.55.4"
+		mon.vm.hostname = "mon"
+		mon.vm.provider "virtualbox" do |vb|
+			vb.memory = "1024"
+		end
+		mon.vm.network "forwarded_port", guest: 80, host: 80
+		mon.vm.provision "shell", path: "provision.sh", keep_color: true
 	end
 end

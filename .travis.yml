@@ -42,7 +42,7 @@ fleet_script_vagrant_macos_tasks : &fleet_script_vagrant_macos_tasks
           - vagrant version
           - vagrant plugin install vagrant-libvirt #The vagrant-libvirt plugin is required when using KVM on Linux
           - vagrant plugin install vagrant-mutate #Convert vagrant boxes to work with different providers
-          - vagrant plugin install vagrant-hostmanager #Convert vagrant boxes to work with different providers          
+          - vagrant plugin install vagrant-hostmanager #Convert vagrant boxes to work with different providers
           - vagrant status
           - vagrant box add "bento/ubuntu-18.04"  --provider=virtualbox
           - vagrant mutate "bento/ubuntu-18.04"  libvirt
@@ -70,8 +70,8 @@ fleet_script_vagrant_tasks : &fleet_script_vagrant_tasks
           - sudo vagrant plugin install vagrant-mutate #Convert vagrant boxes to work with different providers
           - sudo vagrant status
           - sudo virsh list --all #show all running KVM/libvirt VMs
-          - vagrant box add "bento/ubuntu-18.04"  --provider=virtualbox
-          - vagrant mutate "bento/ubuntu-18.04"  libvirt
+          - vagrant box add "ubuntu/bionic64"  --provider=virtualbox
+          - vagrant mutate "ubuntu/bionic64"  libvirt
           - sudo vagrant up --provider=libvirt
           - sudo vagrant box list #veridy installed boxes
           - sudo vagrant status #Check the status of the VMs to see that none of them have been created yet
@@ -80,8 +80,8 @@ fleet_script_vagrant_tasks : &fleet_script_vagrant_tasks
           # - travis_wait 30 sudo vagrant up --provider=libvirt
           - sudo vagrant status
           - sudo vagrant global-status
-          - sudo vagrant ssh master01 -c "hostnamectl"
-          - sudo vagrant ssh master01 -c "curl http://localhost:8080/ "
+          - sudo vagrant ssh mon -c "hostnamectl"
+          - sudo vagrant sshmon -c "curl http://127.0.0.1/zabbix "
           - sudo virsh list --all #show all running KVM/libvirt VMs
 fleet_script_tasks : &fleet_script_tasks
       script:
