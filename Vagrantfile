@@ -1,8 +1,6 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
-# -*- mode: ruby -*-
-# vi: set ft=ruby :
 
 Vagrant.configure("2") do |config|
     config.vm.provider "virtualbox" do |vb|
@@ -11,21 +9,21 @@ Vagrant.configure("2") do |config|
       vb.cpus = 2
     end
 
-  config.vm.define "master01" do |hpcluster|
+  config.vm.define "zabbix01" do |hpcluster|
     hpcluster.vm.box = "bento/ubuntu-18.04"
-    hpcluster.vm.hostname = "master01"
-    hpcluster.vm.network "private_network", ip: "192.168.1.254"
+    hpcluster.vm.hostname = "zabbix01"
+    # hpcluster.vm.network "private_network", ip: "192.168.1.254"
     hpcluster.vm.network "forwarded_port", guest: 80, host: 8080
     hpcluster.vm.provider "virtualbox" do |vb|
-        vb.name = "master01"
+        vb.name = "zabbix01"
         vb.memory = "4096"
     end
-    hpcluster.vm.provision "ansible_local" do |ansible|
-    ansible.playbook = "deploy.yml"
-    ansible.become = true
-    ansible.compatibility_mode = "2.0"
-    ansible.version = "2.9.7"
-    end
+    # hpcluster.vm.provision "ansible_local" do |ansible|
+    # ansible.playbook = "deploy.yml"
+    # ansible.become = true
+    # ansible.compatibility_mode = "2.0"
+    # ansible.version = "2.9.7"
+    # end
     hpcluster.vm.provision "shell", inline: <<-SHELL
     # packages
     wget https://repo.zabbix.com/zabbix/4.0/ubuntu/pool/main/z/zabbix-release/zabbix-release_4.0-3+bionic_all.deb
