@@ -5,114 +5,50 @@
 # vi: set ft=ruby :
 
 Vagrant.configure("2") do |config|
-    config.vm.provider "virtualbox" do |vb|
-      vb.gui = false
-      vb.memory = "512"
-      vb.cpus = 2
-    end
 
-  config.vm.define "master01" do |hpcluster|
-    hpcluster.vm.box = "bento/ubuntu-18.04"
-    hpcluster.vm.hostname = "master01"
-    hpcluster.vm.network "private_network", ip: "192.168.1.254"
-    hpcluster.vm.network "forwarded_port", guest: 80, host: 8080
-    hpcluster.vm.provider "virtualbox" do |vb|
-        vb.name = "master01"
-        vb.memory = "4096"
-    end
-    hpcluster.vm.provision "ansible_local" do |ansible|
-    ansible.playbook = "deploy.yml"
-    ansible.become = true
-    ansible.compatibility_mode = "2.0"
-    ansible.version = "2.9.7"
-    end
-    hpcluster.vm.provision "shell", inline: <<-SHELL
-    # packages
-    wget https://repo.zabbix.com/zabbix/4.0/ubuntu/pool/main/z/zabbix-release/zabbix-release_4.0-3+bionic_all.deb
-    sudo dpkg -i zabbix-release_4.0-3+bionic_all.deb
-    sudo apt-get update
-    sudo apt-get install apache2 libapache2-mod-php
-    sudo apt-get install mysql-server
-    sudo apt-get install php php-mbstring php-gd php-xml php-bcmath php-ldap php-mysql
-    sudo apt-get install -y zabbix-server-mysql zabbix-frontend-php zabbix-agent
-    # configure MYSQL
-    sudo mysql -uroot -proot -e "CREATE DATABASE zabbixdb character set utf8 collate utf8_bin;"
-    sudo mysql -uroot -proot zabbixdb -e "CREATE USER 'zabbix'@'localhost' IDENTIFIED BY 'zabbix';"
-    sudo mysql -uroot -proot -e "GRANT ALL PRIVILEGES ON zabbixdb.* TO 'zabbix'@'localhost' WITH GRANT OPTION;"
-    sudo mysql -uroot -proot -e "FLUSH PRIVILEGES;"
-    zcat /usr/share/doc/zabbix-server-mysql/create.sql.gz | sudo mysql zabbixdb
-    # configure Zabbix
-    sudo sed -i "s|^DBName=zabbix|DBName=zabbixdb|; /^# DBPassword=/a \\\\DBPassword=zabbix" /etc/zabbix/zabbix_server.conf
-    sudo sed -i "s|# php_value date.timezone Europe/Riga|php_value date.timezone Europe/Berlin|" /etc/apache2/conf-enabled/zabbix.conf
-    sudo cat > /usr/share/zabbix/conf/zabbix.conf.php << "EOF"
-<?php
-// Zabbix GUI configuration file.
-global $DB;
-$DB['TYPE']     = 'MYSQL';
-$DB['SERVER']   = 'localhost';
-$DB['PORT']     = '0';
-$DB['DATABASE'] = 'zabbixdb';
-$DB['USER']     = 'zabbix';
-$DB['PASSWORD'] = 'zabbix';
-// Schema name. Used for IBM DB2 and PostgreSQL.
-$DB['SCHEMA'] = '';
-$ZBX_SERVER      = 'localhost';
-$ZBX_SERVER_PORT = '10051';
-$ZBX_SERVER_NAME = '';
-$IMAGE_FORMAT_DEFAULT = IMAGE_FORMAT_PNG;
-EOF
-    # enable and start services
-    sudo update-rc.d zabbix-server enable
-    sudo service zabbix-server start
-    sudo update-rc.d zabbix-agent enable
-    sudo service zabbix-agent start
-    sudo service apache2 restart
-    SHELL
+  config.vm.box = "centos/7"
+  config.vm.provider :libvirt do |vb|
+    vb.memory = 2048
+    vb.cpus = "1"
   end
 
-#   config.vm.box = "bento/ubuntu-18.04"
-#   config.vm.network "forwarded_port", guest: 80, host: 8080
-#   config.vm.provision "shell", inline: <<-SHELL
-#     # packages
-#     wget https://repo.zabbix.com/zabbix/4.0/ubuntu/pool/main/z/zabbix-release/zabbix-release_4.0-3+bionic_all.deb
-#     sudo dpkg -i zabbix-release_4.0-3+bionic_all.deb
-#     sudo apt-get update
-#     sudo apt-get install apache2 libapache2-mod-php
-#     sudo apt-get install mysql-server
-#     sudo apt-get install php php-mbstring php-gd php-xml php-bcmath php-ldap php-mysql
-#     sudo apt-get install -y zabbix-server-mysql zabbix-frontend-php zabbix-agent
-#     # configure MYSQL
-#     sudo mysql -uroot -proot -e "CREATE DATABASE zabbixdb character set utf8 collate utf8_bin;"
-#     sudo mysql -uroot -proot zabbixdb -e "CREATE USER 'zabbix'@'localhost' IDENTIFIED BY 'zabbix';"
-#     sudo mysql -uroot -proot -e "GRANT ALL PRIVILEGES ON zabbixdb.* TO 'zabbix'@'localhost' WITH GRANT OPTION;"
-#     sudo mysql -uroot -proot -e "FLUSH PRIVILEGES;"
-#     zcat /usr/share/doc/zabbix-server-mysql/create.sql.gz | sudo mysql zabbixdb
-#     # configure Zabbix
-#     sudo sed -i "s|^DBName=zabbix|DBName=zabbixdb|; /^# DBPassword=/a \\\\DBPassword=zabbix" /etc/zabbix/zabbix_server.conf
-#     sudo sed -i "s|# php_value date.timezone Europe/Riga|php_value date.timezone Europe/Berlin|" /etc/apache2/conf-enabled/zabbix.conf
-#     sudo cat > /usr/share/zabbix/conf/zabbix.conf.php << "EOF"
-# <?php
-# // Zabbix GUI configuration file.
-# global $DB;
-# $DB['TYPE']     = 'MYSQL';
-# $DB['SERVER']   = 'localhost';
-# $DB['PORT']     = '0';
-# $DB['DATABASE'] = 'zabbixdb';
-# $DB['USER']     = 'zabbix';
-# $DB['PASSWORD'] = 'zabbix';
-# // Schema name. Used for IBM DB2 and PostgreSQL.
-# $DB['SCHEMA'] = '';
-# $ZBX_SERVER      = 'localhost';
-# $ZBX_SERVER_PORT = '10051';
-# $ZBX_SERVER_NAME = '';
-# $IMAGE_FORMAT_DEFAULT = IMAGE_FORMAT_PNG;
-# EOF
-#     # enable and start services
-#     sudo update-rc.d zabbix-server enable
-#     sudo service zabbix-server start
-#     sudo update-rc.d zabbix-agent enable
-#     sudo service zabbix-agent start
-#     sudo service apache2 restart
-#   SHELL
+	config.vm.define "zabbix" do |node|
+		node.vm.synced_folder ".", "/vagrant", type: "sshfs"
+		node.vm.hostname = "zabbix.local"
+		node.vm.network :private_network, ip: "10.0.15.30"
+		node.vm.provision :hostmanager
+		node.vm.provision :ansible do |ansible|
+			ansible.playbook = "playbook.yml"
+			ansible.compatibility_mode = "2.0"
+			ansible.limit = "all"
+		end
+	end
 
+	config.vm.define "proxy" do |node|
+		node.vm.synced_folder ".", "/vagrant", type: "sshfs"
+		node.vm.hostname = "proxy.local"
+		node.vm.network :private_network, ip: "10.0.15.31"
+		node.vm.provision :hostmanager
+	end
+
+	config.vm.define "client1" do |node|
+		node.vm.synced_folder ".", "/vagrant", type: "sshfs"
+		node.vm.hostname = "client1.local"
+		node.vm.network :private_network, ip: "10.0.15.32"
+		node.vm.provision :hostmanager
+	end
+
+	config.vm.define "client2" do |node|
+		node.vm.synced_folder ".", "/vagrant", type: "sshfs"
+		node.vm.hostname = "client2.local"
+		node.vm.network :private_network, ip: "10.0.15.33"
+		node.vm.provision :hostmanager
+	end
+
+	if Vagrant.has_plugin?("vagrant-hostmanager")
+		config.hostmanager.enabled = false
+		config.hostmanager.manage_host = true
+		config.hostmanager.manage_guest = true
+		config.hostmanager.include_offline = true
+	end
 end
