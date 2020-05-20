@@ -72,7 +72,7 @@ fleet_script_vagrant_tasks : &fleet_script_vagrant_tasks
           - sudo virsh list --all #show all running KVM/libvirt VMs
           - vagrant box add "ubuntu/bionic64"  --provider=virtualbox
           - vagrant mutate "ubuntu/bionic64"  libvirt
-          - sudo vagrant up --provider=libvirt
+          - sudo vagrant up --no-parallel --provider=libvirt
           - sudo vagrant box list #veridy installed boxes
           - sudo vagrant status #Check the status of the VMs to see that none of them have been created yet
           # - sudo vagrant up --provider=libvirt vg-irods01
