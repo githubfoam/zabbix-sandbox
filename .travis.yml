@@ -79,8 +79,8 @@ fleet_script_vagrant_tasks : &fleet_script_vagrant_tasks
           # - travis_wait 30 sudo vagrant up --provider=libvirt
           - sudo vagrant status
           - sudo vagrant global-status
-          - sudo vagrant ssh master01 -c "hostnamectl"
-          - sudo vagrant ssh master01 -c "curl http://localhost:8080/ "
+          - sudo vagrant ssh zabbix01 -c "hostnamectl"
+          - sudo vagrant ssh zabbix01 -c "curl http://localhost:8080/ "
           - sudo virsh list --all #show all running KVM/libvirt VMs
 fleet_script_tasks : &fleet_script_tasks
       script:
