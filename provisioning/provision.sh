@@ -19,4 +19,4 @@ systemctl start zabbix-server
 systemctl enable zabbix-server
 
 # this ^^ could be included in ansible too
-ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i /vagrant/ansible_hosts /vagrant/ansible_playbook
+#ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i /vagrant/ansible_hosts /vagrant/ansible_playbook
