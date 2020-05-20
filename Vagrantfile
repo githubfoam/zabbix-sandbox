@@ -25,6 +25,14 @@ Vagrant.configure("2") do |config|
     # ansible.version = "2.9.7"
     # end
     hpcluster.vm.provision "shell", inline: <<-SHELL
+     echo "===================================================================================="
+                               hostnamectl status
+     echo "===================================================================================="
+     echo "         \   ^__^                                                                  "
+     echo "          \  (oo)\_______                                                          "
+     echo "             (__)\       )\/\                                                      "
+     echo "                 ||----w |                                                         "
+     echo "                 ||     ||                                                         "
     # packages
     wget https://repo.zabbix.com/zabbix/4.0/ubuntu/pool/main/z/zabbix-release/zabbix-release_4.0-3+bionic_all.deb
     sudo dpkg -i zabbix-release_4.0-3+bionic_all.deb
@@ -65,6 +73,14 @@ EOF
     sudo update-rc.d zabbix-agent enable
     sudo service zabbix-agent start
     sudo service apache2 restart
+     echo "===================================================================================="
+                               hostnamectl status
+     echo "===================================================================================="
+     echo "         \   ^__^                                                                  "
+     echo "          \  (oo)\_______                                                          "
+     echo "             (__)\       )\/\                                                      "
+     echo "                 ||----w |                                                         "
+     echo "                 ||     ||                                                         "
     SHELL
   end
 

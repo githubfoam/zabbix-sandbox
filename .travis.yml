@@ -80,7 +80,7 @@ fleet_script_vagrant_tasks : &fleet_script_vagrant_tasks
           - sudo vagrant status
           - sudo vagrant global-status
           - sudo vagrant ssh zabbix01 -c "hostnamectl"
-          - travis_wait 15 sudo vagrant ssh zabbix01 -c "sudo service zabbix-server status"
+          - travis_wait 15 sudo vagrant ssh zabbix01 -c "sudo service zabbix-server status && exit"
           # - sudo vagrant ssh zabbix01 -c "sudo service zabbix-agent status"
           # - sudo vagrant ssh zabbix01 -c "sudo service apache2 status"
           # - sudo vagrant ssh zabbix01 -c "curl http://localhost:8080/"
