@@ -1,0 +1,277 @@
+# [vagrant@zabbix vagrant]$ ansible-playbook playbook.yml -i localhost, --connection=local
+
+---
+- hosts: all
+  become: true
+  tasks:
+    - name: Disable SELinux
+      selinux:
+        state: disabled
+
+    - name: upgrade all packages
+      yum:
+        name: https://repo.zabbix.com/zabbix/4.4/rhel/7/x86_64/zabbix-release-4.4-1.el7.noarch.rpm
+        #state: latest
+        update_cache: yes
+
+    - name: Install zabbix packages
+      package:
+        state: installed
+        name:
+          - vim
+          - ansible
+
+# - hosts: zabbix
+#   become: true
+#   tasks:
+#     - name: Install zabbix packages
+#       package:
+#         state: installed
+#         name:
+#           - zabbix-server-mysql
+#           - zabbix-web-mysql
+#           - zabbix-nginx-conf
+#           - zabbix-agent
+#           - mariadb
+#           - mariadb-server
+#           - MySQL-python
+#           - python-pip
+#           - traceroute
+#
+#     - name: install zabbix api
+#       pip:
+#         name: zabbix-api
+#
+#     - name: Edit nginx configuration (hostname and listen)
+#       blockinfile:
+#         dest: /etc/nginx/conf.d/zabbix.conf
+#         insertafter: "^server {"
+#         block: |
+#           listen          80;
+#           server_name     zabbix.local localhost default;
+#     - name: Edit php-fpm configuration (timezone)
+#       lineinfile:
+#         dest: /etc/php-fpm.d/zabbix.conf
+#         line: "php_value[date.timezone] = Europe/Amsterdam"
+#
+#     - name: Disable fping6 (breaks pinging on hostname if no ipv6 is present)
+#       lineinfile:
+#         dest: /etc/zabbix/zabbix_server.conf
+#         regexp: "^# Fping6Location="
+#         line: "Fping6Location="
+#
+#     - name: Start services
+#       service:
+#         name: "{{ item }}"
+#         state: started
+#         enabled: yes
+#       with_items:
+#         - mariadb
+#         - nginx
+#         - zabbix-agent
+#         - zabbix-server
+#         - php-fpm
+#
+#     - name: Prepopulate zabbix.conf.php
+#       copy:
+#         dest: /etc/zabbix/web/zabbix.conf.php
+#         content: |
+#           <?php
+#           // Zabbix GUI configuration file.
+#           global $DB;
+#           $DB['TYPE']     = 'MYSQL';
+#           $DB['SERVER']   = 'localhost';
+#           $DB['PORT']     = '0';
+#           $DB['DATABASE'] = 'zabbix';
+#           $DB['USER']     = 'zabbix';
+#           $DB['PASSWORD'] = '';
+#           // Schema name. Used for IBM DB2 and PostgreSQL.
+#           $DB['SCHEMA'] = '';
+#           $ZBX_SERVER      = 'localhost';
+#           $ZBX_SERVER_PORT = '10051';
+#           $ZBX_SERVER_NAME = '{{ inventory_hostname }}';
+#           $IMAGE_FORMAT_DEFAULT = IMAGE_FORMAT_PNG;
+#     - name: Make DB
+#       mysql_db:
+#         state: present
+#         name: zabbix
+#         collation: utf8_bin
+#         encoding: utf8
+#       register: createdb
+#
+#     - name: Import DB
+#       mysql_db:
+#         state: import
+#         name: zabbix
+#         collation: utf8_bin
+#         encoding: utf8
+#         target: /usr/share/doc/zabbix-server-mysql-4.4.0/create.sql.gz
+#       when: createdb is changed
+#
+#     - name: Make DB user
+#       mysql_user:
+#         name: zabbix
+#         priv: "zabbix.*:ALL"
+#         state: present
+#
+# - hosts: proxy
+#   become: true
+#   tasks:
+#     - name: Install zabbix packages
+#       package:
+#         state: installed
+#         name:
+#           - zabbix-proxy-sqlite3
+#           - python-pip
+#
+#     - name: install zabbix api
+#       pip:
+#         name: zabbix-api
+#
+#     - name: Make sure dir exists
+#       file:
+#         state: directory
+#         path: /var/lib/zabbix
+#         owner: zabbix
+#
+#     - name: Disable fping6 (breaks pinging on hostname if no ipv6 is present)
+#       lineinfile:
+#         dest: /etc/zabbix/zabbix_proxy.conf
+#         regexp: "^# Fping6Location="
+#         line: "Fping6Location="
+#
+#     - name: Fix config (db)
+#       lineinfile:
+#         dest: /etc/zabbix/zabbix_proxy.conf
+#         regexp: "^DBName="
+#         line: "DBName=/var/lib/zabbix/zabbix_proxy"
+#
+#     - name: Fix config (server)
+#       lineinfile:
+#         dest: /etc/zabbix/zabbix_proxy.conf
+#         regexp: "^Server="
+#         line: "Server=zabbix.local"
+#
+#     - name: Start services
+#       service:
+#         name: zabbix-proxy
+#         state: started
+#         enabled: yes
+#
+#     - name: Add proxy to zabbix master
+#       zabbix_proxy:
+#         server_url: http://zabbix.local
+#         login_user: Admin
+#         login_password: zabbix
+#         proxy_name: "Zabbix proxy"
+#         description: "Zabbix proxy"
+#         status: active
+#         state: present
+#         interface:
+#           type: 0
+#           main: 1
+#           useip: 0
+#           ip: ""
+#           dns: "{{ inventory_hostname }}.local"
+#           port: 10050
+#
+#     - name: Add hostgroup Tosca
+#       zabbix_group:
+#         server_url: http://zabbix.local
+#         login_user: Admin
+#         login_password: zabbix
+#         state: present
+#         host_groups:
+#           - Tosca
+#
+#     - name: Add tosca to zabbix master
+#       zabbix_host:
+#         server_url: http://zabbix.local
+#         login_user: Admin
+#         login_password: zabbix
+#         description: "tosca"
+#         host_name: "schoot.org"
+#         visible_name: "tosca"
+#         status: enabled
+#         host_groups:
+#           - Tosca
+#         link_templates:
+#           - Template Module ICMP Ping
+#         state: present
+#         interfaces:
+#           - type: 1
+#             main: 1
+#             useip: 0
+#             ip: ""
+#             dns: "schoot.org"
+#             port: 10050
+#         proxy: "Zabbix proxy"
+#
+# - hosts: client1,client2
+#   become: true
+#   tasks:
+#     - name: Install zabbix packages
+#       package:
+#         state: installed
+#         name:
+#           - zabbix-agent
+#           - zabbix-sender
+#           - zabbix-get
+#           - python-pip
+#
+#     - name: install zabbix api
+#       pip:
+#         name: zabbix-api
+#
+#     - name: Fix config (server)
+#       lineinfile:
+#         dest: /etc/zabbix/zabbix_agentd.conf
+#         regexp: "^Server="
+#         line: "Server=proxy.local"
+#
+#     - name: Fix config (serveractive)
+#       lineinfile:
+#         dest: /etc/zabbix/zabbix_agentd.conf
+#         regexp: "^ServerActive="
+#         line: "ServerActive=proxy.local"
+#
+#     - name: Fix config (hostname)
+#       lineinfile:
+#         dest: /etc/zabbix/zabbix_agentd.conf
+#         regexp: "^Hostname="
+#         line: "Hostname={{ inventory_hostname }}.local"
+#
+#     - name: Start services
+#       service:
+#         name: zabbix-agent
+#         state: started
+#         enabled: yes
+#
+#     - name: Add client to zabbix master
+#       zabbix_host:
+#         server_url: http://zabbix.local
+#         login_user: Admin
+#         login_password: zabbix
+#         description: "{{ inventory_hostname }}"
+#         host_name: "{{ inventory_hostname }}.local"
+#         visible_name: "{{ inventory_hostname }}"
+#         status: enabled
+#         host_groups:
+#           - Linux servers
+#         link_templates:
+#           - Template OS Linux by Zabbix agent
+#         state: present
+#         interfaces:
+#           - type: 1
+#             main: 1
+#             useip: 0
+#             ip: ""
+#             dns: "{{ inventory_hostname }}.local"
+#             port: 10050
+#         proxy: "Zabbix proxy"
+#
+# - hosts: zabbix
+#   tasks:
+#     - name: Login
+#       debug:
+#         msg: "Login op http://zabbix.local met Admin / zabbix"

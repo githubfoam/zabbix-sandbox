@@ -10,7 +10,9 @@ Vagrant.configure("2") do |config|
   end
 
 	config.vm.define "zabbix" do |node|
-		node.vm.synced_folder ".", "/vagrant", type: "sshfs"
+    #docker, virtualbox, smb, nfs, rsync, 9p
+    #The type 'sshfs' is not a valid synced folder type
+		# node.vm.synced_folder ".", "/vagrant", type: "sshfs"
 		node.vm.hostname = "zabbix.local"
 		node.vm.network :private_network, ip: "10.0.15.30"
 		node.vm.provision :hostmanager
@@ -22,21 +24,21 @@ Vagrant.configure("2") do |config|
 	end
 
 	config.vm.define "proxy" do |node|
-		node.vm.synced_folder ".", "/vagrant", type: "sshfs"
+		# node.vm.synced_folder ".", "/vagrant", type: "sshfs"
 		node.vm.hostname = "proxy.local"
 		node.vm.network :private_network, ip: "10.0.15.31"
 		node.vm.provision :hostmanager
 	end
 
 	config.vm.define "client1" do |node|
-		node.vm.synced_folder ".", "/vagrant", type: "sshfs"
+		# node.vm.synced_folder ".", "/vagrant", type: "sshfs"
 		node.vm.hostname = "client1.local"
 		node.vm.network :private_network, ip: "10.0.15.32"
 		node.vm.provision :hostmanager
 	end
 
 	config.vm.define "client2" do |node|
-		node.vm.synced_folder ".", "/vagrant", type: "sshfs"
+		# node.vm.synced_folder ".", "/vagrant", type: "sshfs"
 		node.vm.hostname = "client2.local"
 		node.vm.network :private_network, ip: "10.0.15.33"
 		node.vm.provision :hostmanager

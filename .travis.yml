@@ -68,7 +68,7 @@ fleet_script_vagrant_tasks : &fleet_script_vagrant_tasks
           - echo "============================================="
           - sudo vagrant plugin install vagrant-libvirt #The vagrant-libvirt plugin is required when using KVM on Linux
           - sudo vagrant plugin install vagrant-mutate #Convert vagrant boxes to work with different providers
-          - sudo vagrant plugin install vagrant-hostmanager #Convert vagrant boxes to work with different providers          
+          - sudo vagrant plugin install vagrant-hostmanager #Convert vagrant boxes to work with different providers
           - sudo vagrant status
           - sudo virsh list --all #show all running KVM/libvirt VMs
           - vagrant box add "bento/ubuntu-18.04"  --provider=virtualbox
@@ -81,8 +81,8 @@ fleet_script_vagrant_tasks : &fleet_script_vagrant_tasks
           # - travis_wait 30 sudo vagrant up --provider=libvirt
           - sudo vagrant status
           - sudo vagrant global-status
-          - sudo vagrant ssh master01 -c "hostnamectl"
-          - sudo vagrant ssh master01 -c "curl http://localhost:8080/ "
+          - sudo vagrant ssh zabbix -c "hostnamectl"
+          - sudo vagrant ssh zabbix -c "ansible-playbook playbook.yml -i localhost, --connection=local"
           - sudo virsh list --all #show all running KVM/libvirt VMs
 fleet_script_tasks : &fleet_script_tasks
       script:
@@ -174,19 +174,19 @@ matrix:
     #     - deactivate
 
 
-    - name: "Python 2.7 on xenial amd64"
-      dist: xenial
-      language: python
-      python: 2.7
-      before_install:
-        - pip install virtualenv
-        - virtualenv -p $(which python2) ~venvpy2
-        - source ~venvpy2/bin/activate
-      <<: *fleet_install_tasks
-      <<: *fleet_script_tasks
-      # <<: *fleet_script_vagrant_tasks
-      after_success:
-        - deactivate
+    # - name: "Python 2.7 on xenial amd64"
+    #   dist: xenial
+    #   language: python
+    #   python: 2.7
+    #   before_install:
+    #     - pip install virtualenv
+    #     - virtualenv -p $(which python2) ~venvpy2
+    #     - source ~venvpy2/bin/activate
+    #   <<: *fleet_install_tasks
+    #   <<: *fleet_script_tasks
+    #   # <<: *fleet_script_vagrant_tasks
+    #   after_success:
+    #     - deactivate
 
     # - name: "Python 3.7 on xenial arm64"
     #   os: linux
