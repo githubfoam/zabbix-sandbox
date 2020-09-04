@@ -1,2 +1,18 @@
 # zabbix-sandbox
-zabbix
+
+Travis (.com) branch:
+[![Build Status](https://travis-ci.com/githubfoam/zabbix-sandbox.svg?branch=dev)](https://travis-ci.com/githubfoam/zabbix-sandbox)  
+
+~~~~
+>vagrant init --template Vagrantfile.provision.bash.erb
+>dir
+>vagrant up "vg-zabbix-01"
+
+
+>vagrant destroy -f "vg-zabbix-01"
+
+>vagrant global-status
+
+>del Vagrantfile
+>dir
+~~~~

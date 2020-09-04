@@ -1,0 +1,5 @@
+-c constraints.txt
+testinfra
+pytest
+codecov
+fabric2
