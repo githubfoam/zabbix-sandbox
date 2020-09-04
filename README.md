@@ -1,7 +1,7 @@
 # zabbix-sandbox
 
 Travis (.com) branch:
-[![Build Status](https://travis-ci.com/githubfoam/zabbix-sandbox.svg?branch=dev)](https://travis-ci.com/githubfoam/zabbix-sandbox)  
+[![Build Status](https://travis-ci.com/githubfoam/zabbix-sandbox.svg?branch=master)](https://travis-ci.com/githubfoam/zabbix-sandbox)  
 
 ~~~~
 >vagrant init --template Vagrantfile.provision.bash.erb
