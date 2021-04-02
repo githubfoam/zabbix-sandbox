@@ -1,0 +1,25 @@
+name: "Ubuntu zabbix CI workflow"
+
+
+on:
+  push:
+    branches: [ dev ]
+jobs:
+ 
+
+      
+#https://www.zabbix.com/download?zabbix=5.0&os_distribution=ubuntu&os_version=20.04_focal&db=mysql&ws=apache
+  ubuntu-2004-zabbix-mysql-apache-job:
+    name: "ubuntu-20.04 zabbix-mysql-apache job"
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v2
+    - name: "os fingerprinting"
+      run: hostnamectl status 
+    - name: " Install Zabbix repository "
+      run: |
+        wget https://repo.zabbix.com/zabbix/5.0/ubuntu/pool/main/z/zabbix-release/zabbix-release_5.0-1+focal_all.deb
+        sudo dpkg -i zabbix-release_5.0-1+focal_all.deb
+        sudo apt-get update -qq
+    - name: " Install Zabbix server, frontend, agent"
+      run: sudo apt-get install -yqq zabbix-server-mysql zabbix-frontend-php zabbix-apache-conf zabbix-agent      
